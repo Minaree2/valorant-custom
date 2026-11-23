@@ -40,7 +40,7 @@ input{width:100%;background:#090d13;border:1px solid var(--line);border-radius:9
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./config.js"></script>
 <script>
-const MAPS=["Abyss","Corrode","Summit","Ascent","Bind","Breeze","Fracture","Haven","Icebox","Lotus","Pearl","Split","Sunset"];
+const MAPS=["Abyss","Ascent","Bind","Breeze","Corrode","Fracture","Haven","Icebox","Lotus","Pearl","Split","Summit","Sunset"];
 const $=id=>document.getElementById(id);
 let db=null, room=null, isHost=false, hostToken=null, channel=null, busy=false;
 const q=new URLSearchParams(location.search).get("room");
