@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VALORANT CUSTOM</title>
+<style>
+:root{--bg:#090b10;--panel:#11151d;--line:#293241;--muted:#929bab;--red:#ff4655;--blue:#55a6ff;--white:#f4f6fa}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#222b3a 0,transparent 55%),var(--bg);color:var(--white);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input{font:inherit}button{cursor:pointer;border:0;border-radius:9px;padding:11px 15px;font-weight:800;background:var(--red);color:white}button.secondary{background:#252d3a;color:#e9edf5;border:1px solid var(--line)}button:disabled{opacity:.45;cursor:not-allowed}
+.wrap{max-width:1050px;margin:auto;padding:26px 18px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:28px}.brand{font-weight:950;letter-spacing:2px;font-size:20px}.brand span{color:var(--red)}.pill{font-size:12px;color:#b9c2d1;border:1px solid var(--line);border-radius:99px;padding:5px 10px}
+.hero{text-align:center;margin:35px 0 30px}.eyebrow{color:var(--red);font-weight:900;letter-spacing:3px;font-size:11px}.hero h1{font-size:clamp(30px,6vw,54px);line-height:1.05;margin:10px 0}.hero p{color:var(--muted);margin:0}
+.card{background:linear-gradient(145deg,#151b25,#0f131a);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 18px 60px #0005}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.full{grid-column:1/-1}h2{font-size:16px;margin:0 0 14px}.muted{color:var(--muted)}.row{display:flex;gap:9px;align-items:center}.row>*{min-width:0}.row input{flex:1}
+input{width:100%;background:#090d13;border:1px solid var(--line);border-radius:9px;padding:12px;color:white;outline:none}input:focus{border-color:var(--red)}.stack{display:grid;gap:10px}.hidden{display:none!important}
+.room-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.room-code{font-size:23px;font-weight:950;letter-spacing:4px}.status{color:#77d6a0;font-size:12px}.players{display:flex;flex-wrap:wrap;gap:8px}.player{background:#202938;border:1px solid #344052;border-radius:8px;padding:7px 10px;font-size:13px}.teams{display:grid;grid-template-columns:1fr 1fr;gap:14px}.team{border-radius:13px;padding:16px;min-height:190px;background:#111923;border:1px solid #2a3a50}.team.red{border-top:3px solid var(--red)}.team.blue{border-top:3px solid var(--blue)}.team h3{margin:0 0 12px;font-size:14px;letter-spacing:1px}.team.red h3{color:var(--red)}.team.blue h3{color:var(--blue)}.member{padding:8px 10px;background:#1b2431;border-radius:7px;margin:6px 0;font-size:13px}
+.map-result{font-size:clamp(25px,5vw,40px);font-weight:950;text-align:center;padding:22px 8px;letter-spacing:1px}.map-list{display:flex;flex-wrap:wrap;gap:7px}.map-chip{border:1px solid var(--line);border-radius:99px;padding:6px 10px;color:#bbc4d2;font-size:12px}.actions{display:flex;gap:9px;flex-wrap:wrap}.note{font-size:12px;color:var(--muted)}.toast{margin-top:12px;color:#9fe0b5;font-size:13px;min-height:18px}
+@media(max-width:680px){.grid,.teams{grid-template-columns:1fr}.full{grid-column:auto}.wrap{padding:18px 12px 40px}.card{padding:16px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="top"><div class="brand"><span>V</span>ALORANT CUSTOM</div><div class="pill" id="connection">CONNECTING...</div></header>
+<section class="hero"><div class="eyebrow">CUSTOM GAME ORGANIZER</div><h1>내전, 바로 시작.</h1><p>참가자를 모으고 팀과 맵을 랜덤으로 결정하세요.</p></section>
+<section id="setup" class="grid">
+ <div class="card stack"><h2>새로운 방 만들기</h2><input id="newName" maxlength="16" placeholder="방장 닉네임"><button id="createBtn">방 만들기</button><p class="note">방을 만든 사람이 방장이 됩니다. 방장 권한은 서버에서 확인합니다.</p></div>
+ <div class="card stack"><h2>초대 코드로 참가</h2><input id="joinName" maxlength="16" placeholder="내 게임 닉네임"><div class="row"><input id="joinCode" maxlength="6" placeholder="방 코드"><button id="joinBtn">참가</button></div></div>
+ <div class="card full"><h2>연결 상태</h2><p class="muted" id="setupInfo">Supabase 연결을 확인하고 있습니다.</p></div>
+</section>
+<section id="room" class="hidden stack">
+ <div class="card stack">
+  <div class="room-head"><div><div class="note">ROOM CODE</div><div id="roomCode" class="room-code">------</div></div><div><div id="role" class="status">참가자</div><button id="shareBtn" class="secondary">초대 링크 복사</button></div></div>
+  <div class="row"><input id="addPlayer" maxlength="16" placeholder="참가자 닉네임 추가 (방장 전용)"><button id="addBtn">추가</button></div>
+  <div><h2>참가자 <span id="count" class="muted">0명</span></h2><div id="players" class="players"></div></div>
+ </div>
+ <div class="grid">
+  <div class="card stack"><h2>랜덤 팀 배정 <span class="muted">5 vs 5</span></h2><div class="teams"><div class="team red"><h3>RED TEAM</h3><div id="redTeam"></div></div><div class="team blue"><h3>BLUE TEAM</h3><div id="blueTeam"></div></div></div><button id="teamBtn">팀 랜덤 추첨</button></div>
+  <div class="card stack"><h2>랜덤 맵 추첨</h2><div id="mapResult" class="map-result">READY?</div><div id="maps" class="map-list"></div><button id="mapBtn">맵 랜덤 추첨</button></div>
+  <div class="card full stack"><div class="row" style="justify-content:space-between"><h2>방 관리</h2><span class="note">방장만 변경 가능</span></div><div class="actions"><button id="resetBtn" class="secondary">추첨 결과 초기화</button><button id="leaveBtn" class="secondary">방 나가기</button></div><div id="toast" class="toast"></div></div>
+ </div>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script>
+const MAPS=["Abyss","Ascent","Bind","Breeze","Fracture","Haven","Icebox","Lotus","Pearl","Split","Sunset"];
+const $=id=>document.getElementById(id);
+let db=null, room=null, isHost=false, hostToken=null, channel=null, busy=false;
+const q=new URLSearchParams(location.search).get("room");
+function say(s){$("toast").textContent=s}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function token(){const a=new Uint8Array(32);crypto.getRandomValues(a);return [...a].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function render(){
+ if(!room)return;
+ $("setup").classList.add("hidden");$("room").classList.remove("hidden");
+ $("roomCode").textContent=room.code;$("role").textContent=isHost?"● 방장":"● 참가자";
+ $("addPlayer").disabled=!isHost;$("addBtn").disabled=!isHost;$("teamBtn").disabled=!isHost;$("mapBtn").disabled=!isHost;$("resetBtn").disabled=!isHost;
+ $("count").textContent=(room.players||[]).length+"명";
+ $("players").innerHTML=(room.players||[]).map(n=>`<span class="player">${esc(n)}</span>`).join("");
+ $("redTeam").innerHTML=(room.red||[]).map(n=>`<div class="member">${esc(n)}</div>`).join("")||'<div class="note">아직 추첨 전입니다.</div>';
+ $("blueTeam").innerHTML=(room.blue||[]).map(n=>`<div class="member">${esc(n)}</div>`).join("")||'<div class="note">아직 추첨 전입니다.</div>';
+ $("mapResult").textContent=room.map||"READY?";
+ $("maps").innerHTML=MAPS.map(m=>`<span class="map-chip">${m}</span>`).join("");
+}
+async function rpc(name,args){const {data,error}=await db.rpc(name,args);if(error)throw error;return data}
+function subscribe(){
+ if(channel)db.removeChannel(channel);
+ channel=db.channel("room-"+room.code).on("postgres_changes",{event:"UPDATE",schema:"public",table:"rooms",filter:"code=eq."+room.code},payload=>{
+   if(payload.new){room=payload.new.state;room.code=payload.new.code;render()}
+ }).subscribe();
+}
+async function enter(state,host,secret){
+ room={...state,code:state.code||$("joinCode").value.toUpperCase()};isHost=host;hostToken=secret||null;render();subscribe();
+ history.replaceState({}, "", "?room="+room.code);
+}
+async function init(){
+ const cfg=window.VALORANT_CONFIG||{};
+ if(!cfg.url||!cfg.anonKey||cfg.url.includes("YOUR_")||cfg.anonKey.includes("YOUR_")){
+  $("connection").textContent="NOT CONFIGURED";$("setupInfo").textContent="config.js에 Supabase 프로젝트 URL과 anon key를 입력해야 실제 여러 기기 간 실시간 공유가 작동합니다.";return;
+ }
+ db=window.supabase.createClient(cfg.url,cfg.anonKey);
+ try{const {error}=await db.from("rooms").select("code").limit(1);if(error)throw error;
+ $("connection").textContent="● REALTIME BACKEND READY";$("setupInfo").textContent="Supabase 연결 완료. 방을 만들거나 초대 코드로 참가하세요.";
+ if(q){$("joinCode").value=q.toUpperCase();$("joinName").focus()}
+ }catch(e){$("connection").textContent="CONNECTION ERROR";$("setupInfo").textContent="Supabase 연결 실패: "+e.message}
+}
+$("createBtn").onclick=async()=>{
+ if(!db)return alert("Supabase 설정을 먼저 완료해 주세요.");
+ const name=$("newName").value.trim();if(!name)return alert("방장 닉네임을 입력해 주세요.");
+ try{const code=Math.random().toString(36).slice(2,8).toUpperCase(),secret=token();
+ const state=await rpc("create_room",{p_code:code,p_host_token:secret,p_name:name});await enter(state,true,secret);
+ }catch(e){alert("방 생성 실패: "+e.message)}
+};
+$("joinBtn").onclick=async()=>{
+ if(!db)return alert("Supabase 설정을 먼저 완료해 주세요.");
+ const name=$("joinName").value.trim(),code=$("joinCode").value.trim().toUpperCase();if(!name||!code)return alert("닉네임과 방 코드를 입력해 주세요.");
+ try{const state=await rpc("join_room",{p_code:code,p_name:name});await enter(state,false,null)}catch(e){alert("참가 실패: "+e.message)}
+};
+async function hostAction(action,payload={}){
+ if(!isHost||!hostToken||busy)return;busy=true;
+ try{const state=await rpc("host_action",{p_code:room.code,p_host_token:hostToken,p_action:action,p_payload:payload});room=state;render();say("변경 사항이 모든 참가자에게 공유되었습니다.")}catch(e){say("요청 실패: "+e.message)}finally{busy=false}
+}
+$("addBtn").onclick=async()=>{const n=$("addPlayer").value.trim();if(!n)return;await hostAction("add_player",{name:n});$("addPlayer").value=""};
+$("teamBtn").onclick=()=>hostAction("draw_teams");
+$("mapBtn").onclick=()=>hostAction("draw_map");
+$("resetBtn").onclick=()=>hostAction("reset");
+$("shareBtn").onclick=async()=>{const u=location.origin+location.pathname+"?room="+room.code;try{await navigator.clipboard.writeText(u);say("초대 링크를 복사했습니다.")}catch{say(u)}};
+$("leaveBtn").onclick=()=>{if(channel)db.removeChannel(channel);channel=null;room=null;isHost=false;hostToken=null;history.replaceState({},"",location.pathname);$("room").classList.add("hidden");$("setup").classList.remove("hidden")};
+init();
+</script>
+</body></html>
